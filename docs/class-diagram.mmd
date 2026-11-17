@@ -1,0 +1,128 @@
+classDiagram
+    direction TB
+
+    class LibraryItem {
+        <<abstract>>
+        -int id
+        -String title
+        -int year
+        -boolean available
+        +getLoanPeriodDays()* int
+        +getDailyFineRate()* int
+        +getTypeName()* String
+        +getDetails()* String
+        +isAvailable() boolean
+        +markBorrowed() void
+        +markReturned() void
+        +compareTo(LibraryItem) int
+    }
+    class Book {
+        -String author
+        +getAuthor() String
+    }
+    class Magazine {
+        -int issueNumber
+        +getIssueNumber() int
+    }
+    class Dvd {
+        -int durationMinutes
+        +getDurationMinutes() int
+    }
+    class Member {
+        -int id
+        -String name
+        -String email
+    }
+    class Loan {
+        -LocalDate loanDate
+        -LocalDate dueDate
+        -LocalDate returnDate
+        +isActive() boolean
+        +isOverdue(LocalDate) boolean
+        +daysOverdue(LocalDate) long
+        +close(LocalDate) void
+    }
+
+    class FinePolicy {
+        <<interface>>
+        +calculateFine(Loan, LocalDate) long
+        +getName() String
+    }
+    class StandardFinePolicy
+    class GracePeriodFinePolicy {
+        -int graceDays
+    }
+    class CappedFinePolicy {
+        -long maximumFine
+    }
+
+    class LibraryService {
+        -List~LibraryItem~ items
+        -List~Member~ members
+        -List~Loan~ loans
+        -FinePolicy finePolicy
+        +setFinePolicy(FinePolicy) void
+        +addItem(LibraryItem) void
+        +addMember(Member) void
+        +getItems(Comparator) List~LibraryItem~
+        +searchItemsByTitle(String) List~LibraryItem~
+        +borrowItem(int, int, LocalDate) Loan
+        +returnItem(int, LocalDate) long
+        +getOverdueLoans(LocalDate) List~Loan~
+        +exportData() LibraryData
+        +importData(LibraryData) void
+    }
+
+    class LibraryStorage {
+        <<interface>>
+        +save(LibraryData) void
+        +load() LibraryData
+    }
+    class TextFileStorage {
+        -Path directory
+    }
+    class LibraryData {
+        <<record>>
+    }
+    class ConsoleMenu {
+        -Scanner in
+        -PrintStream out
+        +run() void
+    }
+
+    class LibraryException
+    class EntityNotFoundException
+    class DuplicateEntityException
+    class ItemNotAvailableException
+    class LoanLimitExceededException
+    class StorageException
+
+    LibraryItem <|-- Book
+    LibraryItem <|-- Magazine
+    LibraryItem <|-- Dvd
+
+    FinePolicy <|.. StandardFinePolicy
+    FinePolicy <|.. GracePeriodFinePolicy
+    FinePolicy <|.. CappedFinePolicy
+
+    LibraryStorage <|.. TextFileStorage
+
+    LibraryException <|-- EntityNotFoundException
+    LibraryException <|-- DuplicateEntityException
+    LibraryException <|-- ItemNotAvailableException
+    LibraryException <|-- LoanLimitExceededException
+    LibraryException <|-- StorageException
+
+    Loan "0..*" --> "1" LibraryItem : item
+    Loan "0..*" --> "1" Member : member
+
+    LibraryService "1" o-- "0..*" LibraryItem : catalogue
+    LibraryService "1" o-- "0..*" Member : members
+    LibraryService "1" *-- "0..*" Loan : loans
+    LibraryService "1" --> "1" FinePolicy : current policy
+
+    ConsoleMenu --> LibraryService
+    ConsoleMenu --> LibraryStorage
+    LibraryStorage ..> LibraryData
+    LibraryService ..> LibraryData
+    LibraryService ..> LibraryException : throws
