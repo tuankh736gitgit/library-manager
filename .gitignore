@@ -1,0 +1,20 @@
+# Build output
+target/
+*.class
+*.jar
+
+# Local application data
+data/
+
+# IDE metadata
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+nbproject/
+
+# OS files
+.DS_Store
+Thumbs.db
